@@ -1,0 +1,55 @@
+[project]
+name = "nucas"
+description = "Collection of common python utils"
+readme = "README.md"
+requires-python = ">=3.10"
+license-files = ["LICENSE"]
+authors = [{name = "nuru", email="moshi.na.vioo@gmail.com"}]
+version = "0.1.0"
+
+dependencies = [
+    "imageio-ffmpeg",
+    "mediapy",
+    "ml_collections",
+    "pandas",
+    "requests",
+    "tqdm",
+]
+
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["nucas*"]
+exclude = ["tmp*"]
+
+[project.urls]
+repository = "https://github.com/nuru-nu/nucas"
+
+[project.optional-dependencies]
+tensorflow = [
+    # TODO: implement tensorflow backend
+]
+pytorch = [
+    "thop",
+    "torch",
+    "torchvision",
+]
+colab = [
+    # TODO: make thop work without unnecessary installs
+    # "thop",
+]
+dev = [
+    "pyink",
+    "pylint>=2.6.0",
+    # TODO: add tests instead of test.py
+    # "pytest",
+]
+
+[tool.pyink]
+# Formatting configuration to follow Google style-guide
+line-length = 80
+preview = true
+pyink-indentation = 2
+pyink-use-majority-quotes = true
