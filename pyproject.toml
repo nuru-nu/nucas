@@ -43,8 +43,7 @@ colab = [
 dev = [
     "pyink",
     "pylint>=2.6.0",
-    # TODO: add tests instead of test.py
-    # "pytest",
+    "pytest",
 ]
 
 [tool.pyink]
