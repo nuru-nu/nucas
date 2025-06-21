@@ -3,6 +3,10 @@
 Library to be used on Colab or for local training of NCAs. Based on a collection
 of Colabs mentioned in https://nuru.nu/nca-doc
 
+TODO: should we use github issues for TODOs ?
+
+TODO: write documentation (pydoc / examples)
+
 ## Synopsis
 
 ### Colab
@@ -69,6 +73,10 @@ TODO: add scripts
 
 TODO: accelerate training with metal
 
+TODO: do we want to add UI ? browser based ?
+
+TODO: create OS X application ? a Docker container ?
+
 ```python
 import nucas
 
@@ -84,3 +92,11 @@ mediapy.show_video(imgs)
 db = nucas.db.get_db()
 db.save(config, model, stats, imgs, overwrite=True)
 ```
+
+### Run in Browser
+
+TODO: convert ncas for ca.js
+
+TODO: reimplement ca.js with swiss.gl
+
+TODO: build server for midi input / syphon output
