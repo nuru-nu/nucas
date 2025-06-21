@@ -2,6 +2,7 @@ import base64
 import io
 import json
 import logging
+import os
 import sys
 
 import IPython
@@ -186,5 +187,6 @@ def init(logs=True, drive=True):
     )
 
   if drive:
-    utils.set_basedir('/gdrive/MyDrive/NURU/seli/ncas/implementations')
+    utils.set_basedir('/gdrive/MyDrive/ncas')
     google.colab.drive.mount('/gdrive')
+    os.makedirs(utils.get_basedir(), exist_ok=True)
