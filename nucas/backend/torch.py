@@ -178,3 +178,8 @@ def profile(model):
   # avoid cluttering state_dict with total_ops, total_params
   model = copy.deepcopy(model)
   return thop.profile(model, inputs=(model.seed(1),))
+
+
+torch.serialization.add_safe_globals(
+    [torch.nn.Conv2d, CaOrig, CaOt, MuOrig, MuOt]
+)

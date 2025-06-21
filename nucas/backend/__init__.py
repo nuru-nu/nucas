@@ -18,6 +18,8 @@ else:
   raise ImportError(f'Unsupported backend: {backend}')
 
 CaOrig = backend.CaOrig
+CaOt = backend.CaOt
 MuOrig = backend.MuOrig
+MuOt = backend.MuOt
 load = backend.load
 profile = backend.profile
