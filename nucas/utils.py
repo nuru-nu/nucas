@@ -10,11 +10,19 @@ import numpy as np
 import PIL.Image
 import requests
 import torch
+import scipy.interpolate
 
 # TODO: refactor pytorch code
 
 # TODO: utilities for creating npz files
 
+
+if torch.backends.mps.is_available():
+  logging.info('Apple Metal (MPS) available, using GPU')
+  device = torch.device('mps')
+else:
+  logging.info('No Apple Metal (MPS) available, using CPU')
+  device = torch.device('cpu')
 
 _basedir = f'{os.path.expanduser("~")}/ncas'
 
@@ -116,9 +124,9 @@ def perchannel_conv(x, filters):
 
 
 def perception(x):
-  ident = torch.tensor([[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 0.0]])
-  sobel_x = torch.tensor([[-1.0, 0.0, 1.0], [-2.0, 0.0, 2.0], [-1.0, 0.0, 1.0]])
-  lap = torch.tensor([[1.0, 2.0, 1.0], [2.0, -12, 2.0], [1.0, 2.0, 1.0]])
+  ident = torch.tensor([[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 0.0]]).to(device)
+  sobel_x = torch.tensor([[-1.0, 0.0, 1.0], [-2.0, 0.0, 2.0], [-1.0, 0.0, 1.0]]).to(device)
+  lap = torch.tensor([[1.0, 2.0, 1.0], [2.0, -12, 2.0], [1.0, 2.0, 1.0]]).to(device)
   filters = torch.stack([ident, sobel_x, sobel_x.T, lap])
   return perchannel_conv(x, filters)
 

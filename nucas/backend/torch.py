@@ -9,13 +9,13 @@ from .. import utils
 
 
 if torch.backends.mps.is_available():
-  torch.set_default_device('mps')
   logging.info('Apple Metal (MPS) available, using GPU')
+  device = torch.device('mps')
 else:
   logging.info('No Apple Metal (MPS) available, using CPU')
+  device = torch.device('cpu')
 
-
-vgg16 = torchvision.models.vgg16(weights='IMAGENET1K_V1').features
+vgg16 = torchvision.models.vgg16(weights='IMAGENET1K_V1').features.to(device)
 
 
 def load(model, basename):
@@ -27,9 +27,9 @@ def load(model, basename):
 
 def get_grams(imgs):
   style_layers = [1, 6, 11, 18, 25]
-  mean = torch.tensor([0.485, 0.456, 0.406])[:, None, None]
-  std = torch.tensor([0.229, 0.224, 0.225])[:, None, None]
-  x = (imgs - mean) / std
+  mean = torch.tensor([0.485, 0.456, 0.406])[:, None, None].to(device)
+  std = torch.tensor([0.229, 0.224, 0.225])[:, None, None].to(device)
+  x = (imgs.to(device) - mean) / std
   grams = []
   for i, layer in enumerate(vgg16[: max(style_layers) + 1]):
     x = layer(x)
@@ -52,10 +52,10 @@ class CaOrig(torch.nn.Module):
     self.w2.weight.data.zero_()
 
   def forward(self, x, update_rate=0.5):
-    y = utils.perception(x)
+    y = utils.perception(x).to(x.device).contiguous()
     y = self.w2(torch.relu(self.w1(y)))
     b, c, h, w = y.shape
-    udpate_mask = (torch.rand(b, 1, h, w) + update_rate).floor()
+    udpate_mask = (torch.rand(b, 1, h, w, device=x.device) + update_rate).floor()
     return x + y * udpate_mask
 
   def seed(self, n, sz=128):
@@ -82,7 +82,7 @@ def project_sort(x, proj):
 
 def ot_loss(source, target, proj_n=32):
   ch, n = source.shape[-2:]
-  projs = F.normalize(torch.randn(ch, proj_n), dim=0)
+  projs = F.normalize(torch.randn(ch, proj_n, device=source.device), dim=0)
   source_proj = project_sort(source, projs)
   target_proj = project_sort(target, projs)
   target_interp = F.interpolate(target_proj, n, mode='nearest')
@@ -91,8 +91,8 @@ def ot_loss(source, target, proj_n=32):
 
 def get_vgg_ot(imgs):
   style_layers = [1, 6, 11, 18, 25]
-  mean = torch.tensor([0.485, 0.456, 0.406])[:, None, None]
-  std = torch.tensor([0.229, 0.224, 0.225])[:, None, None]
+  mean = torch.tensor([0.485, 0.456, 0.406])[:, None, None].to(device)
+  std = torch.tensor([0.229, 0.224, 0.225])[:, None, None].to(device)
   x = (imgs - mean) / std
   b, c, h, w = x.shape
   features = [x.reshape(b, c, h * w)]
@@ -131,20 +131,22 @@ class _Mu(torch.nn.Module):
     )
     n = filters // 3
 
-    self.filters = torch.stack(
+    filter_data = torch.stack(
         [ident]
         + [lap] * (n + (filters % 3 > 0))
         + [sobel_x] * (n + (filters % 3 > 1))
         + [sobel_x.T] * n
     )
+    self.register_buffer('filters', filter_data)
+
     self.w = torch.nn.Conv2d(chn * (1 + filters) * 2, chn, 1, bias=True)
     self.w.weight.data.zero_()
 
   def forward(self, x, update_rate=0.5):
-    p = utils.perchannel_conv(x, self.filters)
+    p = utils.perchannel_conv(x, self.filters).to(device).contiguous()
     y = self.w(torch.concat([p, torch.abs(p)], dim=1))
     b, c, h, w = y.shape
-    update_mask = (torch.rand(b, 1, h, w) + update_rate).floor()
+    update_mask = (torch.rand(b, 1, h, w, device=x.device) + update_rate).floor()
     return x + update_mask * y
 
   def seed(self, n, sz=128, seed=0):
@@ -175,9 +177,16 @@ def profile(model):
   except ImportError:
     logging.info('Could not import thop, skipping profiling')
     return 0, 0
-  # avoid cluttering state_dict with total_ops, total_params
-  model = copy.deepcopy(model)
-  return thop.profile(model, inputs=(model.seed(1),))
+
+  model_cpu = copy.deepcopy(model).to("cpu")
+
+  seed_inputs = model_cpu.seed(1)
+  if isinstance(seed_inputs, torch.Tensor):
+      inputs_cpu = (seed_inputs.to("cpu"),)
+  else:
+      inputs_cpu = tuple(t.to("cpu") for t in seed_inputs)
+
+  return thop.profile(model_cpu, inputs=inputs_cpu, verbose=False)
 
 
 torch.serialization.add_safe_globals(

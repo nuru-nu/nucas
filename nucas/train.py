@@ -53,6 +53,8 @@ def train(config, plot_every_n=4, iag=None):
   if iag is None:
     iag = colab.ImageAndGraph(height=400, width=800)
 
+  device = backend.device
+
   cls = getattr(backend, config.model_name)
   loss_f = cls.get_loss_f(utils.im2pt(im_target))
   model = cls(**config.model)
@@ -61,24 +63,26 @@ def train(config, plot_every_n=4, iag=None):
     model = backend.load(model, f'{utils.get_basedir()}/{config.get("parent")}')
 
   # TODO: refactor to enable multiple backends
+
+  model = model.to(device)
+
   opt = torch.optim.Adam(model.parameters(), config['lr'])
   # https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate
   lr_sched = torch.optim.lr_scheduler.MultiStepLR(opt, [2000], 0.3)
   loss_log = []
   with torch.no_grad():
-    pool = model.seed(config.pool_size, sz=config.sz)
+    pool = model.seed(config.pool_size, sz=config.sz).to(device)
 
   t0 = time.monotonic()
   for i in tqdm.trange(config.steps):
     with torch.no_grad():
-      # update batch from pool
       batch_idx = np.random.choice(len(pool), config.batch_size, replace=False)
       x = pool[batch_idx]
       if i % 8 == 0:
         # reinit 1/batch_size every 8th step
-        x[:1] = model.seed(1, sz=config.sz)
+        x[:1] = model.seed(1, sz=config.sz).to(device)
 
-    # do same random rollout for entire batch
+    # The rollout loop now runs entirely on the GPU.
     step_n = np.random.randint(config.rollout_min, config.rollout_max)
     for k in range(step_n):
       x = model(x, update_rate=config.update_rate)
@@ -96,7 +100,6 @@ def train(config, plot_every_n=4, iag=None):
       opt.step()
       opt.zero_grad()
       lr_sched.step()
-      # move back to pool
       pool[batch_idx] = x
 
       loss_log.append(loss.item())
@@ -111,7 +114,11 @@ def train(config, plot_every_n=4, iag=None):
 
   dt = time.monotonic() - t0
   print(f'{dt:.1f} seconds - {len(loss_log) / dt:.1f} steps/sec')
-  flops, params = backend.profile(model)
+  try:
+    flops, params = backend.profile(model)
+  except Exception as e:
+    flops, params = 0, 0 # Assign default values on failure
+
   stats = dict(
       dt=dt,
       loss_log=loss_log,

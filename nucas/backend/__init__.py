@@ -17,6 +17,7 @@ elif backend == 'tensorflow':
 else:
   raise ImportError(f'Unsupported backend: {backend}')
 
+device = backend.device
 CaOrig = backend.CaOrig
 CaOt = backend.CaOt
 MuOrig = backend.MuOrig

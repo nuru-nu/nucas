@@ -12,7 +12,8 @@ def run(config, model, steps=300, per_step=1, update_rate=None, sz=256):
     update_rate = config.update_rate
   imgs = []
   with torch.no_grad():
-    x = model.seed(1, sz)
+    device = next(model.parameters()).device
+    x = model.seed(1, sz).to(device)
     for _ in tqdm.trange(steps, leave=False):
       for _ in range(per_step):
         x[:] = model(x, update_rate=update_rate)
