@@ -64,7 +64,7 @@ cd nucas &&
 python -m venv env &&
 . env/bin/activate &&
 pip install --upgrade pip &&
-pip install -e .[pytorch,dev]
+pip install -e ".[pytorch,dev]"
 ```
 
 TODO: add jupyter support
