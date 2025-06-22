@@ -46,7 +46,7 @@ dev = [
     "pytest",
     "pytest-xdist",  # pytest -n
     "pytest-subtests",
-
+    "scipy",
 ]
 
 [tool.pyink]

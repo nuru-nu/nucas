@@ -133,3 +133,7 @@ def perception(x):
 
 def to_rgb(x):
   return x[..., :3, :, :] + 0.5
+
+def make_f(f, a):
+  a = np.clip(a, 0, 1)
+  return lambda x: f(scipy.interpolate.interp1d(np.linspace(0, 1, len(a)), a)(x))
