@@ -71,8 +71,6 @@ TODO: add jupyter support
 
 TODO: add scripts
 
-TODO: accelerate training with metal
-
 TODO: do we want to add UI ? browser based ?
 
 TODO: create OS X application ? a Docker container ?

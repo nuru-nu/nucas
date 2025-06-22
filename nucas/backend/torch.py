@@ -8,11 +8,11 @@ import torchvision.models
 from .. import utils
 
 
-if torch.cuda.is_available():
-  torch.set_default_tensor_type('torch.cuda.FloatTensor')
-  logging.info('Using GPU')
+if torch.backends.mps.is_available():
+  torch.set_default_device('mps')
+  logging.info('Apple Metal (MPS) available, using GPU')
 else:
-  logging.info('No GPU available, using CPU')
+  logging.info('No Apple Metal (MPS) available, using CPU')
 
 
 vgg16 = torchvision.models.vgg16(weights='IMAGENET1K_V1').features
