@@ -44,13 +44,24 @@ class Db:
   def path(self, name):
     return os.path.join(self.base, name)
 
-  def save(self, config, model, stats, imgs, *, overwrite=False):
+  def save_video(self, config, imgs, *, overwrite=False):
     if len(self.df):
       assert config.id not in set(self.df.id) or overwrite
+
     p = lambda ext: self.path(f'{config.id}.{ext}')
+
     mediapy.write_video(p('mp4'), imgs)
     mediapy.write_image(p('png'), imgs[-1])
     mediapy.write_image(p('jpg'), imgs[-1], fmt='jpeg')
+
+  def save(self, config, model, stats, imgs, *, overwrite=False):
+    if len(self.df):
+      assert config.id not in set(self.df.id) or overwrite
+
+    p = lambda ext: self.path(f'{config.id}.{ext}')
+
+    self.save_video(config, imgs, overwrite=overwrite)
+
     torch.save(model, p('pt'))
     with open(p('stats'), 'w') as f:
       json.dump(stats, f)
