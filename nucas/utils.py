@@ -2,6 +2,9 @@ import datetime
 import io
 import os
 import logging
+import shutil
+import subprocess
+import tempfile
 
 import numpy as np
 import PIL.Image
@@ -33,16 +36,34 @@ def ts():
   return datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
 
 
-def imread(url, mode='RGB'):
-  if url.startswith(('http:', 'https:')):
-    # wikimedia requires a user agent
-    headers = {
-        'User-Agent': 'Requests in Colab/0.0 (https://colab.research.google.com/; no-reply@google.com) requests/0.0'
-    }
-    r = requests.get(url, headers=headers)
-    f = io.BytesIO(r.content)
+def fetch(url):
+  """Fetches with requests, fallback wget if available."""
+  headers = {
+      'User-Agent': 'Requests in Colab/0.0 (https://colab.research.google.com/; no-reply@google.com) requests/0.0'
+  }
+  r = requests.get(url, headers=headers)
+  if r.status_code == 0:
+    return r.content
+  if shutil.which('wget') is None:
+    raise RuntimeError(f'requests failed {r.status_code} - {r.text}')
+  logging.info('requests failed, trying wget')
+  with tempfile.TemporaryDirectory() as tmpdir:
+    filename = f'{tmpdir}/img.jpg'
+    result = subprocess.run(
+        ['wget', '-O', filename, url], capture_output=True, text=True
+    )
+    if result.returncode != 0:
+      raise RuntimeError(
+          f'wget failed code={result.returncode}\n\n{result.stderr}\n\n{result.stdout}'
+      )
+    return open(filename, 'rb').read()
+
+
+def imread(path_or_url, mode='RGB'):
+  if path_or_url.startswith(('http:', 'https:')):
+    f = io.BytesIO(fetch(path_or_url))
   else:
-    f = url
+    f = path_or_url
   im = PIL.Image.open(f)
   if mode is not None:
     im = im.convert(mode)
