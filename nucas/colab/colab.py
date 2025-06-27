@@ -26,11 +26,14 @@ def max_output_height(pixels):
 
 class RegionSelector:
 
-  def __init__(self, img):
-    src = self._img2src(img)
+  def __init__(self, url, maxhw=800):
+    img = utils.imread(url)
+    scale = min(1.0, maxhw / max(*img.size))
+    src = self._img2src(img.resize([int(_ * scale) for _ in img.size]))
     IPython.display.display(
         IPython.display.HTML(
-            r"""
+            (
+                r"""
     <pre id="stuff">
       <img id="img" src="__SRC__">
     </pre>
@@ -42,7 +45,10 @@ class RegionSelector:
     const stuff = document.getElementById('stuff')
     const boxes = []
     const bcr = img.getBoundingClientRect()
+    const scale = __SCALE__
+    const url = __URL__
     console.log('bcr', bcr);
+    const el = document.createElement('div')
     let x0=null, y0=null
     function update(x, y) {
       const x1 = Math.min(x, x0)
@@ -54,11 +60,10 @@ class RegionSelector:
       el.style.top = y1 + 'px'
       el.style.width = (x2 - x1) + 'px'
       el.style.height = (y2 - y1) + 'px'
-      const ret = [Math.round(x1 - bcr.x), Math.round(y1 - bcr.y), Math.round(x2 - bcr.x), Math.round(y2 - bcr.y)]
-      return ret
+      const ret = [x1 - bcr.x, y1 - bcr.y, x2 - bcr.x, y2 - bcr.y]
+      return ret.map(x => Math.round(x / scale))
     }
     img.addEventListener('mousedown', e => {
-      const el = document.createElement('div')
       el.style.border = '2px solid red'
       el.style.position = 'absolute'
       stuff.append(el)
@@ -76,13 +81,17 @@ class RegionSelector:
     window.addEventListener('mouseup', e => {
       if (x0 === null) return
       const coords = update(e.clientX, e.clientY)
-      pre.textContent += JSON.stringify(coords) + '\n'
+      pre.textContent = `
+config.target = ${JSON.stringify(url)}
+config.crop_region = ${JSON.stringify(coords)}`
       x0 = y0 = null
       e.stopPropagation()
     })
-    """.replace(
-                '__SRC__', src
+    """
             )
+            .replace('__SRC__', src)
+            .replace('__SCALE__', str(scale))
+            .replace('__URL__', json.dumps(url))
         )
     )
 
