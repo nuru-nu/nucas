@@ -17,12 +17,13 @@ model1, stats = nucas.train.train(config)
 imgs = nucas.run.run(config, model1)
 db.save(config, model1, stats, imgs, overwrite=True)
 
-config = nucas.train.get_config()
-config.target = 'https://www.robots.ox.ac.uk/~vgg/data/dtd/images/dotted/dotted_0112.jpg'
-config.steps = 2000
-model2, stats2 = nucas.train.train(config)
-imgs = nucas.run.run(config, model2)
-db.save(config, model2, stats, imgs, overwrite=True)
+config2 = nucas.train.get_config()
+config2.target = 'https://www.robots.ox.ac.uk/~vgg/data/dtd/images/dotted/dotted_0112.jpg'
+config2.steps = 2000
+config2.parent = config.id
+model2, stats2 = nucas.train.train(config2)
+imgs = nucas.run.run(config2, model2)
+db.save(config2, model2, stats, imgs, overwrite=True)
 
 
 # Graft the first model onto the second
