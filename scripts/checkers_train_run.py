@@ -1,17 +1,9 @@
-import logging, sys
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[logging.StreamHandler(sys.stdout)],
-)
-
+"""Smoke screen script test that trains a single NCA and stores it in the db."""
 
 import nucas
 
 config = nucas.train.get_config()
 config.target = 'https://www.robots.ox.ac.uk/~vgg/data/dtd/images/chequered/chequered_0045.jpg'
-config.steps = 2
 
 model, stats = nucas.train.train(config)
 imgs = nucas.run.run(config, model)
