@@ -50,7 +50,7 @@ def fetch(url):
       'User-Agent': 'Requests in Colab/0.0 (https://colab.research.google.com/; no-reply@google.com) requests/0.0'
   }
   r = requests.get(url, headers=headers)
-  if r.status_code == 0:
+  if r.status_code == 200:
     return r.content
   if shutil.which('wget') is None:
     raise RuntimeError(f'requests failed {r.status_code} - {r.text}')
