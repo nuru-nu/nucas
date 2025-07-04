@@ -13,6 +13,7 @@ dependencies = [
     "ml_collections",
     "pandas",
     "requests",
+    "scipy",
     "tqdm",
 ]
 
@@ -46,7 +47,6 @@ dev = [
     "pytest",
     "pytest-xdist",  # pytest -n
     "pytest-subtests",
-    "scipy",
 ]
 
 [tool.pyink]
