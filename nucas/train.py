@@ -117,7 +117,7 @@ def train(config, plot_every_n=4, iag=None):
   try:
     flops, params = backend.profile(model)
   except Exception as e:
-    flops, params = 0, 0 # Assign default values on failure
+    flops, params = 0, 0  # Assign default values on failure
 
   stats = dict(
       dt=dt,

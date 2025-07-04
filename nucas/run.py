@@ -21,8 +21,20 @@ def run(config, model, steps=300, per_step=1, update_rate=None, sz=256):
       imgs.append(img)
   return np.array(imgs)
 
-def run_graft(config, model_child, model_parent, steps=300, cycles=1, update_rate=None
-              , *, mask_f, update_rate_f, per_step_f, sz=256):
+
+def run_graft(
+    config,
+    model_child,
+    model_parent,
+    steps=300,
+    cycles=1,
+    update_rate=None,
+    *,
+    mask_f,
+    update_rate_f,
+    per_step_f,
+    sz=256,
+):
   if update_rate is None:
     update_rate = config.update_rate
 
@@ -37,7 +49,9 @@ def run_graft(config, model_child, model_parent, steps=300, cycles=1, update_rat
         # Explicitly set dtype to float32 to be compatible with MPS
         mask = torch.tensor(mask_f(i/steps), dtype=torch.float32, device=device)
 
-        update_rate, per_step = map(float, (update_rate_f(i/steps), per_step_f(i/steps)))
+        update_rate, per_step = map(
+            float, (update_rate_f(i / steps), per_step_f(i / steps))
+        )
         while t < per_step:
           dx1 = model_child(x, update_rate=update_rate) - x
           dx2 = model_parent(x, update_rate=update_rate) - x
