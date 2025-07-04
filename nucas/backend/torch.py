@@ -55,7 +55,9 @@ class CaOrig(torch.nn.Module):
     y = utils.perception(x).to(x.device).contiguous()
     y = self.w2(torch.relu(self.w1(y)))
     b, c, h, w = y.shape
-    udpate_mask = (torch.rand(b, 1, h, w, device=x.device) + update_rate).floor()
+    udpate_mask = (
+        torch.rand(b, 1, h, w, device=x.device) + update_rate
+    ).floor()
     return x + y * udpate_mask
 
   def seed(self, n, sz=128):
@@ -146,7 +148,9 @@ class _Mu(torch.nn.Module):
     p = utils.perchannel_conv(x, self.filters).to(device).contiguous()
     y = self.w(torch.concat([p, torch.abs(p)], dim=1))
     b, c, h, w = y.shape
-    update_mask = (torch.rand(b, 1, h, w, device=x.device) + update_rate).floor()
+    update_mask = (
+        torch.rand(b, 1, h, w, device=x.device) + update_rate
+    ).floor()
     return x + update_mask * y
 
   def seed(self, n, sz=128, seed=0):
@@ -178,13 +182,13 @@ def profile(model):
     logging.info('Could not import thop, skipping profiling')
     return 0, 0
 
-  model_cpu = copy.deepcopy(model).to("cpu")
+  model_cpu = copy.deepcopy(model).to('cpu')
 
   seed_inputs = model_cpu.seed(1)
   if isinstance(seed_inputs, torch.Tensor):
-      inputs_cpu = (seed_inputs.to("cpu"),)
+    inputs_cpu = (seed_inputs.to('cpu'),)
   else:
-      inputs_cpu = tuple(t.to("cpu") for t in seed_inputs)
+    inputs_cpu = tuple(t.to('cpu') for t in seed_inputs)
 
   return thop.profile(model_cpu, inputs=inputs_cpu, verbose=False)
 
