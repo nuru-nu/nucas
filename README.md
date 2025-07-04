@@ -67,9 +67,9 @@ pip install --upgrade pip &&
 pip install -e ".[pytorch,dev]"
 ```
 
-TODO: add jupyter support
+TODO: add jupyter support, nucas.colab -> nucas.notebook
 
-TODO: add scripts
+TODO: add scripts + notebooks
 
 TODO: do we want to add UI ? browser based ?
 
