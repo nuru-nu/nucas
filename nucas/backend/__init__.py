@@ -1,3 +1,5 @@
+import logging
+
 backend = None
 try:
   import torch as unused_torch
@@ -6,7 +8,7 @@ try:
 except ImportError:
   backend = 'tensorflow'
 
-print(f'Using backend: {backend}')
+logging.info(f'Using backend: {backend}')
 
 if backend == 'torch':
   from . import torch as backend

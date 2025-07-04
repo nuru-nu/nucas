@@ -8,16 +8,14 @@ import torchvision.models
 from .. import utils
 
 
-# Note: during module import logging is not configured yet, so we use print().
-
 if torch.cuda.is_available():
-  print('CUDA available, using GPU')
+  logging.info('CUDA available, using GPU')
   torch.set_default_device('cuda')
 elif torch.backends.mps.is_available():
-  print('Apple Metal (MPS) available, using GPU')
+  logging.info('Apple Metal (MPS) available, using GPU')
   torch.set_default_device('mps')
 else:
-  print('No GPU detected, using CPU')
+  logging.info('No GPU detected, using CPU')
   torch.set_default_device('cpu')
 
 vgg16 = torchvision.models.vgg16(weights='IMAGENET1K_V1').features

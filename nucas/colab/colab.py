@@ -184,17 +184,7 @@ function ImageAndGraph_set_img(src) {
     )
 
 
-def init(logs=True, drive=True):
-  if logs:
-    for handler in logging.root.handlers[:]:
-      logging.root.removeHandler(handler)
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        stream=sys.stdout,
-        force=True,
-    )
-
+def init(drive=True):
   if drive:
     utils.set_basedir('/gdrive/MyDrive/ncas')
     google.colab.drive.mount('/gdrive')
