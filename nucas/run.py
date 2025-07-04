@@ -12,8 +12,7 @@ def run(config, model, steps=300, per_step=1, update_rate=None, sz=256):
     update_rate = config.update_rate
   imgs = []
   with torch.no_grad():
-    device = next(model.parameters()).device
-    x = model.seed(1, sz).to(device)
+    x = model.seed(1, sz)
     for _ in tqdm.trange(steps, leave=False):
       for _ in range(per_step):
         x[:] = model(x, update_rate=update_rate)
@@ -41,13 +40,12 @@ def run_graft(
   imgs = []
   t = 0
   with torch.no_grad():
-    device = next(model_parent.parameters()).device
-    x = model_child.seed(1, sz).to(device)
+    x = model_child.seed(1, sz)
 
     for _ in range(cycles):
       for i in tqdm.trange(steps, leave=False):
         # Explicitly set dtype to float32 to be compatible with MPS
-        mask = torch.tensor(mask_f(i/steps), dtype=torch.float32, device=device)
+        mask = torch.tensor(mask_f(i / steps), dtype=torch.float32)
 
         update_rate, per_step = map(
             float, (update_rate_f(i / steps), per_step_f(i / steps))

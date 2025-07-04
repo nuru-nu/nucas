@@ -8,14 +8,19 @@ import torchvision.models
 from .. import utils
 
 
-if torch.backends.mps.is_available():
-  logging.info('Apple Metal (MPS) available, using GPU')
-  device = torch.device('mps')
-else:
-  logging.info('No Apple Metal (MPS) available, using CPU')
-  device = torch.device('cpu')
+# Note: during module import logging is not configured yet, so we use print().
 
-vgg16 = torchvision.models.vgg16(weights='IMAGENET1K_V1').features.to(device)
+if torch.cuda.is_available():
+  print('CUDA available, using GPU')
+  torch.set_default_device('cuda')
+elif torch.backends.mps.is_available():
+  print('Apple Metal (MPS) available, using GPU')
+  torch.set_default_device('mps')
+else:
+  print('No GPU detected, using CPU')
+  torch.set_default_device('cpu')
+
+vgg16 = torchvision.models.vgg16(weights='IMAGENET1K_V1').features
 
 
 def load(model, basename):
@@ -27,9 +32,9 @@ def load(model, basename):
 
 def get_grams(imgs):
   style_layers = [1, 6, 11, 18, 25]
-  mean = torch.tensor([0.485, 0.456, 0.406])[:, None, None].to(device)
-  std = torch.tensor([0.229, 0.224, 0.225])[:, None, None].to(device)
-  x = (imgs.to(device) - mean) / std
+  mean = torch.tensor([0.485, 0.456, 0.406])[:, None, None]
+  std = torch.tensor([0.229, 0.224, 0.225])[:, None, None]
+  x = (imgs - mean) / std
   grams = []
   for i, layer in enumerate(vgg16[: max(style_layers) + 1]):
     x = layer(x)
@@ -52,12 +57,10 @@ class CaOrig(torch.nn.Module):
     self.w2.weight.data.zero_()
 
   def forward(self, x, update_rate=0.5):
-    y = utils.perception(x).to(x.device).contiguous()
+    y = utils.perception(x).contiguous()
     y = self.w2(torch.relu(self.w1(y)))
     b, c, h, w = y.shape
-    udpate_mask = (
-        torch.rand(b, 1, h, w, device=x.device) + update_rate
-    ).floor()
+    udpate_mask = (torch.rand(b, 1, h, w) + update_rate).floor()
     return x + y * udpate_mask
 
   def seed(self, n, sz=128):
@@ -84,7 +87,7 @@ def project_sort(x, proj):
 
 def ot_loss(source, target, proj_n=32):
   ch, n = source.shape[-2:]
-  projs = F.normalize(torch.randn(ch, proj_n, device=source.device), dim=0)
+  projs = F.normalize(torch.randn(ch, proj_n), dim=0)
   source_proj = project_sort(source, projs)
   target_proj = project_sort(target, projs)
   target_interp = F.interpolate(target_proj, n, mode='nearest')
@@ -93,8 +96,8 @@ def ot_loss(source, target, proj_n=32):
 
 def get_vgg_ot(imgs):
   style_layers = [1, 6, 11, 18, 25]
-  mean = torch.tensor([0.485, 0.456, 0.406])[:, None, None].to(device)
-  std = torch.tensor([0.229, 0.224, 0.225])[:, None, None].to(device)
+  mean = torch.tensor([0.485, 0.456, 0.406])[:, None, None]
+  std = torch.tensor([0.229, 0.224, 0.225])[:, None, None]
   x = (imgs - mean) / std
   b, c, h, w = x.shape
   features = [x.reshape(b, c, h * w)]
@@ -145,12 +148,10 @@ class _Mu(torch.nn.Module):
     self.w.weight.data.zero_()
 
   def forward(self, x, update_rate=0.5):
-    p = utils.perchannel_conv(x, self.filters).to(device).contiguous()
+    p = utils.perchannel_conv(x, self.filters).contiguous()
     y = self.w(torch.concat([p, torch.abs(p)], dim=1))
     b, c, h, w = y.shape
-    update_mask = (
-        torch.rand(b, 1, h, w, device=x.device) + update_rate
-    ).floor()
+    update_mask = (torch.rand(b, 1, h, w) + update_rate).floor()
     return x + update_mask * y
 
   def seed(self, n, sz=128, seed=0):

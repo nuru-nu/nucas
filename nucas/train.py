@@ -53,8 +53,6 @@ def train(config, plot_every_n=4, iag=None):
   if iag is None:
     iag = colab.ImageAndGraph(height=400, width=800)
 
-  device = backend.device
-
   cls = getattr(backend, config.model_name)
   loss_f = cls.get_loss_f(utils.im2pt(im_target))
   model = cls(**config.model)
@@ -64,14 +62,14 @@ def train(config, plot_every_n=4, iag=None):
 
   # TODO: refactor to enable multiple backends
 
-  model = model.to(device)
+  model = model
 
   opt = torch.optim.Adam(model.parameters(), config['lr'])
   # https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate
   lr_sched = torch.optim.lr_scheduler.MultiStepLR(opt, [2000], 0.3)
   loss_log = []
   with torch.no_grad():
-    pool = model.seed(config.pool_size, sz=config.sz).to(device)
+    pool = model.seed(config.pool_size, sz=config.sz)
 
   t0 = time.monotonic()
   for i in tqdm.trange(config.steps):
@@ -80,7 +78,7 @@ def train(config, plot_every_n=4, iag=None):
       x = pool[batch_idx]
       if i % 8 == 0:
         # reinit 1/batch_size every 8th step
-        x[:1] = model.seed(1, sz=config.sz).to(device)
+        x[:1] = model.seed(1, sz=config.sz)
 
     # The rollout loop now runs entirely on the GPU.
     step_n = np.random.randint(config.rollout_min, config.rollout_max)
