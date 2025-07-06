@@ -77,6 +77,7 @@ class Db:
     self._df_save()
 
   def load(self, id_):
+    """Returns config, model, stats for the given id."""
     with open(self.path(f'{id_}.json')) as f:
       config = ml_collections.ConfigDict(json.load(f))
     # model = globals()[config.model_name](**config.model)
