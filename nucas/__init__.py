@@ -14,7 +14,7 @@ logging.basicConfig(
 
 from . import utils
 from . import db
-from . import colab
+from . import notebook
 from . import backend
 from . import train
 from . import run
@@ -22,8 +22,8 @@ from . import run
 
 __all__ = [
     "backend",
-    "colab",
     "db",
+    "notebook",
     "run",
     "train",
     "utils",

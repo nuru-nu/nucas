@@ -3,10 +3,9 @@ import time
 import ml_collections
 import numpy as np
 import torch
-import tqdm
 
 from . import backend
-from . import colab
+from . import notebook
 from . import utils
 
 
@@ -51,7 +50,7 @@ def train(config, plot_every_n=4, iag=None):
 
   im_target = get_target(config)
   if iag is None:
-    iag = colab.ImageAndGraph(height=400, width=800)
+    iag = notebook.ImageAndGraph(height=400, width=800)
 
   cls = getattr(backend, config.model_name)
   loss_f = cls.get_loss_f(utils.im2pt(im_target))
@@ -72,7 +71,7 @@ def train(config, plot_every_n=4, iag=None):
     pool = model.seed(config.pool_size, sz=config.sz)
 
   t0 = time.monotonic()
-  for i in tqdm.trange(config.steps):
+  for i in notebook.tqdm.trange(config.steps):
     with torch.no_grad():
       batch_idx = np.random.choice(len(pool), config.batch_size, replace=False)
       x = pool[batch_idx]
