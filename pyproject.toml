@@ -48,6 +48,10 @@ dev = [
     "pytest-xdist",  # pytest -n
     "pytest-subtests",
 ]
+jupyter = [
+    "jupyterlab",
+    "ipywidgets",
+]
 
 [tool.pyink]
 # Formatting configuration to follow Google style-guide
