@@ -3,6 +3,12 @@
 Library to be used on Colab or for local training of NCAs. Based on a collection
 of Colabs mentioned in https://nuru.nu/nca-doc
 
+Don't know NCAs? Check out
+https://distill.pub/selforg/2021/textures/
+
+NCA code based on
+[google-research/self-organizing-systems](https://github.com/google-research/self-organising-systems).
+
 TODO: should we use github issues for TODOs ?
 
 TODO: write documentation (pydoc / examples)
@@ -24,7 +30,7 @@ You probably want to run below code on a runtime with GPUs:
 
 ```python
 import nucas
-nucas.colab.init()  # will ask to authorize Drive access ...
+nucas.notebook.init()  # will ask to authorize Drive access ...
 
 config = nucas.train.get_config()
 config.target = 'https://www.robots.ox.ac.uk/~vgg/data/dtd/images/chequered/chequered_0045.jpg'
@@ -64,12 +70,8 @@ cd nucas &&
 python -m venv env &&
 . env/bin/activate &&
 pip install --upgrade pip &&
-pip install -e ".[pytorch,dev]"
+pip install -e ".[pytorch,dev,jupyter]"
 ```
-
-TODO: add jupyter support, nucas.colab -> nucas.notebook
-
-TODO: add scripts + notebooks
 
 TODO: do we want to add UI ? browser based ?
 
