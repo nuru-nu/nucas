@@ -18,7 +18,7 @@ TODO: write documentation (pydoc / examples)
 ### Colab
 
 Demonstration Colab:
-https://colab.research.google.com/drive/1f3NvI5GvFhS2j-Qo6STSAzofuldnFu0F
+https://colab.research.google.com/github/nuru-nu/nucas/blob/main/notebooks/train_run.ipynb
 
 Single install should work:
 
