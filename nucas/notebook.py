@@ -10,7 +10,7 @@ import sys
 import IPython
 import IPython.display
 import numpy as np
-import PIL
+import PIL.Image
 
 from . import utils
 
@@ -45,6 +45,10 @@ class Environment(enum.Enum):
   UNKNOWN = 'unknown'
   JUPYTER = 'jupyer'
   COLAB = 'colab'
+
+  @property
+  def is_graphical(self):
+    return self in (Environment.JUPYTER, Environment.COLAB)
 
 
 # Also provide a handy nucas.notebook.tqdm shortcut:
@@ -156,6 +160,9 @@ class ImageAndGraph:
 
   def __init__(self, width=400, height=300):
     self.ts = datetime.datetime.now().strftime('%H%M%S_%f')
+    self.js_handle = IPython.display.display(
+        IPython.display.Javascript('void(0);'), display_id=True
+    )
     IPython.display.display(
         IPython.display.HTML(
             """
@@ -237,8 +244,8 @@ function colab_set_img(img) { ImageAndGraph__TS__.set_img(img) }
           f'colab_set_img("{self._img2src(img)}")',
           ignore_result=True,
       )
-    if environment == Environment.JUPYTER:
-      IPython.display.display(
+    if environment == Environment.JUPYTER and self.js_handle:
+      self.js_handle.update(
           IPython.display.Javascript(
               f'ImageAndGraph{self.ts}.set_img("{self._img2src(img)}")',
           )
@@ -253,8 +260,8 @@ function colab_set_img(img) { ImageAndGraph__TS__.set_img(img) }
           f'colab_update_graph({json.dumps(list(x))}, {json.dumps(list(y))})',
           ignore_result=True,
       )
-    if environment == Environment.JUPYTER:
-      IPython.display.display(
+    if environment == Environment.JUPYTER and self.js_handle:
+      self.js_handle.update(
           IPython.display.Javascript(
               f'ImageAndGraph{self.ts}.update_graph({json.dumps(list(x))}, {json.dumps(list(y))})',
           )
