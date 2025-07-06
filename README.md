@@ -71,6 +71,7 @@ python -m venv env &&
 . env/bin/activate &&
 pip install --upgrade pip &&
 pip install -e ".[pytorch,dev,jupyter]"
+jupyter lab  # starts web UI - check out notebooks/
 ```
 
 TODO: do we want to add UI ? browser based ?
