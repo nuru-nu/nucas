@@ -16,8 +16,15 @@ import scipy.interpolate
 
 # TODO: utilities for creating npz files
 
+_basedir = ''
 
-_basedir = f'{os.path.expanduser("~")}/ncas'
+
+def is_running_test():
+  return (
+      'PYTEST_CURRENT_TEST' in os.environ
+      or 'PYTEST_RUNNING' in os.environ
+      or 'UNITTEST_RUNNING' in os.environ
+  )
 
 
 def get_basedir():
@@ -31,6 +38,16 @@ def set_basedir(basedir):
   global _basedir
   _basedir = basedir
   logging.info('Updated basedir: %s', basedir)
+
+
+def set_basedir_temp():
+  set_basedir(tempfile.mkdtemp(prefix='nucas_'))
+
+
+if is_running_test():
+  set_basedir_temp()
+else:
+  set_basedir(f'{os.path.expanduser("~")}/ncas')
 
 
 def ts():
