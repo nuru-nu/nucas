@@ -71,7 +71,9 @@ class Db:
     self.df = pd.concat(
         [
             self.df.query(f'id!="{config.id}"') if len(self.df) else self.df,
-            pd.DataFrame([dict(flatten(config.to_dict()))]),
+            pd.DataFrame(
+                [{**dict(flatten(config.to_dict())), **dict(flatten(stats))}]
+            ),
         ]
     )
     self._df_save()
