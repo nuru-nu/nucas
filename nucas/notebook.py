@@ -265,6 +265,8 @@ def init(drive=True):
   """Initializes notebook environment."""
   if drive:
     if environment == Environment.COLAB:
+      import google.colab
+
       utils.set_basedir('/gdrive/MyDrive/ncas')
       google.colab.drive.mount('/gdrive')
       os.makedirs(utils.get_basedir(), exist_ok=True)
