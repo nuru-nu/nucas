@@ -23,7 +23,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - run: pip --version
-    - run: pip install -e .[pytorch,dev]
+    - run: pip install -e .[pytorch,dev,jupyter]
     - run: pip freeze
 
     # Run tests
