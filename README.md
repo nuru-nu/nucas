@@ -49,30 +49,16 @@ db.save(config, model, stats, imgs, overwrite=True)
 
 Below instructions were tested on OS X 15.5
 
-Unfortunately, default OS X installation does not include package `lzma`, so we
-first need to install a working Python version:
+1. Install the repo: `git clone git@github.com:nuru-nu/nucas.git`
 
-```bash
-brew install pyenv xz &&
-eval "$(pyenv init -)" &&
-pyenv update &&
-(pyenv uninstall 3.10.17 || true) &&
-pyenv install 3.10.17 &&
-pyenv local 3.10.17
-```
+2. Install uv: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 
-Then all dependencies can be installed (in developer mode) via `.[pytorch,dev]`.
-This creates an virtual environment of about 703M in size.
+3. Install virtual environment: `uv venv --python 3.13 && . .venv/bin/activate`
 
-```bash
-git clone https://github.com/nuru-nu/nucas &&
-cd nucas &&
-python -m venv env &&
-. env/bin/activate &&
-pip install --upgrade pip &&
-pip install -e ".[pytorch,dev,jupyter]"
-jupyter lab  # starts web UI - check out notebooks/
-```
+4. Install dependencies: `uv pip install -e '.[pytorch,dev,jupyter]'`
+
+NOTE: If `torch` fails with some `_lzma` error, make sure to install xz via
+brew: `brew install xz`.
 
 TODO: do we want to add UI ? browser based ?
 
@@ -91,7 +77,7 @@ import mediapy
 mediapy.show_video(imgs)
 
 db = nucas.db.get_db()
-db.save(config, model, stats, imgs, overwrite=True)
+db.save(config, model, stats, imgs)
 ```
 
 ### Run in Browser
