@@ -54,12 +54,15 @@ def ts():
   return datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
 
 
-def fetch(url):
-  """Fetches with requests, fallback wget if available."""
+def fetch(path_or_url):
+  """Fetches file or http with requests (fallback wget if available)."""
+  if path_or_url.startswith('/'):
+    return open(path_or_url, 'rb').read()
+  assert path_or_url.startswith(('http:', 'https:')), path_or_url
   headers = {
       'User-Agent': 'Requests in Colab/0.0 (https://colab.research.google.com/; no-reply@google.com) requests/0.0'
   }
-  r = requests.get(url, headers=headers)
+  r = requests.get(path_or_url, headers=headers)
   if r.status_code == 200:
     return r.content
   if shutil.which('wget') is None:
@@ -68,7 +71,7 @@ def fetch(url):
   with tempfile.TemporaryDirectory() as tmpdir:
     filename = f'{tmpdir}/img.jpg'
     result = subprocess.run(
-        ['wget', '-O', filename, url], capture_output=True, text=True
+        ['wget', '-O', filename, path_or_url], capture_output=True, text=True
     )
     if result.returncode != 0:
       raise RuntimeError(
@@ -78,10 +81,7 @@ def fetch(url):
 
 
 def imread(path_or_url, mode='RGB'):
-  if path_or_url.startswith(('http:', 'https:')):
-    f = io.BytesIO(fetch(path_or_url))
-  else:
-    f = path_or_url
+  f = io.BytesIO(fetch(path_or_url))
   im = PIL.Image.open(f)
   if mode is not None:
     im = im.convert(mode)

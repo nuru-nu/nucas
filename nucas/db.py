@@ -114,3 +114,16 @@ def get_db(base=None):
   db = Db(base)
   logging.info('Loaded db from %s: %d entries', base, len(db.df))
   return db
+
+
+def load(path):
+  """Load a model from the given path."""
+  if not os.path.exists(path):
+    raise FileNotFoundError(f'Path {path} does not exist')
+  if path.endswith('.pt'):
+    return torch.load(path)
+  elif path.endswith('.json'):
+    with open(path) as f:
+      return ml_collections.ConfigDict(json.load(f))
+  else:
+    raise ValueError(f'Unsupported file type: {path}')
