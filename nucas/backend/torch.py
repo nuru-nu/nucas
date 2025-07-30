@@ -47,19 +47,22 @@ def get_grams(imgs):
 class CaOrig(torch.nn.Module):
   """See http://arxiv.org/abs/2105.07299"""
 
-  def __init__(self, chn=12, hidden_n=96, bias=True):
+  def __init__(self, chn=12, hidden_n=96, bias=True, clip=None):
     super().__init__()
     self.chn = chn
     self.w1 = torch.nn.Conv2d(chn * 4, hidden_n, 1, bias=bias)
     self.w2 = torch.nn.Conv2d(hidden_n, chn, 1, bias=bias)
     self.w2.weight.data.zero_()
+    self.clip = (
+        (lambda x: torch.clip(x, -clip, clip)) if clip else (lambda x: x)
+    )
 
   def forward(self, x, update_rate=0.5):
     y = utils.perception(x).contiguous()
     y = self.w2(torch.relu(self.w1(y)))
     b, c, h, w = y.shape
     udpate_mask = (torch.rand(b, 1, h, w) + update_rate).floor()
-    return x + y * udpate_mask
+    return self.clip(x + y * udpate_mask)
 
   def seed(self, n, sz=128):
     return torch.zeros(n, self.chn, sz, sz)

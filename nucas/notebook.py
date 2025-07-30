@@ -124,8 +124,8 @@ class RegionSelector:
         if (x0 === null) return
         const coords = update(e.offsetX, e.offsetY)
         pre.textContent = `
-  config.target = ${JSON.stringify(url)}
-  config.crop_region = ${JSON.stringify(coords)}`
+config.target = ${JSON.stringify(url)}
+config.crop_region = ${JSON.stringify(coords)}`
         x0 = y0 = null
         e.stopPropagation()
         e.preventDefault()
