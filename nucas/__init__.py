@@ -29,3 +29,15 @@ __all__ = [
     "utils",
 ]
 __version__ = "0.1.0"
+
+
+def reload():
+  """Reloads modules."""
+  import importlib
+
+  importlib.reload(utils)
+  importlib.reload(db)
+  importlib.reload(notebook)
+  importlib.reload(backend)
+  importlib.reload(train)
+  importlib.reload(run)
